@@ -1,0 +1,451 @@
+<!DOCTYPE html><html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Windows 10 Pro Emulator</title>
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Segoe UI Variable','Segoe UI',sans-serif;
+    transition:all .25s ease;
+}body{ overflow:hidden; background:#000; }
+
+#desktop{ width:100vw; height:100vh; background:url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1600&auto=format&fit=crop') center/cover no-repeat; position:relative; }
+
+.desktop-icons{ display:flex; flex-direction:column; gap:18px; padding:20px; }
+
+.icon{ width:80px; text-align:center; color:white; cursor:pointer; }
+
+.icon img{ width:52px; height:52px; }
+
+.icon span{ display:block; margin-top:6px; font-size:13px; }
+
+.taskbar{ position:absolute; bottom:0; left:0; width:100%; height:58px; background:rgba(25,25,25,0.72); border-top:1px solid rgba(255,255,255,0.12); backdrop-filter:blur(24px); display:flex; align-items:center; padding:0 10px; backdrop-filter:blur(10px); }
+
+.start-btn{ width:42px; height:42px; background:linear-gradient(135deg,#0a84ff,#2563eb); border:none; color:white; font-size:20px; border-radius:5px; cursor:pointer; }
+
+.search{ margin-left:10px; width:250px; height:38px; border:none; border-radius:5px; padding:0 12px; background:#f0f0f0; }
+
+.task-icons{ display:flex; gap:12px; margin-left:15px; }
+
+.task-icons button{ width:40px; height:40px; border:none; border-radius:6px; background:rgba(255,255,255,0.08); color:white; font-size:18px; cursor:pointer; }
+
+.clock{ margin-left:auto; color:white; font-size:14px; text-align:right; }
+
+.start-menu{ position:absolute; bottom:55px; left:10px; width:340px; height:450px; background:rgba(32,32,32,0.68); border:1px solid rgba(255,255,255,0.1); box-shadow:0 10px 40px rgba(0,0,0,0.45); border-radius:12px; padding:20px; display:none; color:white; backdrop-filter:blur(14px); }
+
+.start-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:20px; }
+
+.tile{ background:#0078d7; border-radius:22px; height:85px; display:flex; justify-content:center; align-items:center; text-align:center; font-size:14px; cursor:pointer; }
+
+.window{ position:absolute; top:90px; left:150px; width:700px; height:450px; background:rgba(245,245,245,0.82); backdrop-filter:blur(30px); border:1px solid rgba(255,255,255,0.35); border-radius:10px; overflow:hidden; display:none; box-shadow:0 20px 60px rgba(0,0,0,0.45); }
+
+.window-header{ height:45px; background:#0078d7; color:white; display:flex; align-items:center; justify-content:space-between; padding:0 15px; }
+
+.window-body{ padding:20px; height:calc(100% - 45px); overflow:auto; }
+
+.close-btn{ background:red; color:white; border:none; width:30px; height:30px; border-radius:6px; cursor:pointer; }
+
+.browser-bar{ display:flex; gap:10px; margin-bottom:15px; }
+
+.browser-bar input{ flex:1; padding:10px; }
+
+.browser-content{ background:#f4f4f4; padding:20px; border-radius:10px; }
+
+.notes-area{ width:100%; height:300px; resize:none; padding:15px; font-size:16px; }
+
+@keyframes spin{ 0%{transform:rotate(0deg);} 100%{transform:rotate(360deg);} }
+
+@media(max-width:900px){ .window{ width:95%; left:2.5%; height:75%; }
+
+.search{ width:140px; } } </style>
+
+</head>
+<body><div id="desktop"><div id="contextMenu" style="position:absolute;display:none;background:#202020;color:white;padding:10px;border-radius:10px;z-index:9999;width:220px;box-shadow:0 10px 30px rgba(0,0,0,0.4);">
+<div style="padding:10px;cursor:pointer;">🖱 Aktualisieren</div>
+<div style="padding:10px;cursor:pointer;" onclick="toggleDarkMode()">🌙 Dark Mode</div>
+<div style="padding:10px;cursor:pointer;" onclick="nextWallpaper()">🖼 Hintergrund ändern</div>
+<div style="padding:10px;cursor:pointer;" onclick="openWindow('settings')">⚙ Einstellungen</div>
+</div><div class="desktop-icons"><div class="icon" onclick="openWindow('browser')">
+<img src="https://cdn-icons-png.flaticon.com/512/732/732212.png">
+<span>Browser</span>
+</div><div class="icon" onclick="openWindow('notes')">
+<img src="https://cdn-icons-png.flaticon.com/512/2991/2991112.png">
+<span>Notizen</span>
+</div><div class="icon" onclick="openWindow('store')">
+<img src="https://cdn-icons-png.flaticon.com/512/732/732229.png">
+<span>Microsoft Store</span>
+</div><div class="icon" onclick="openWindow('edge')">
+<img src="https://cdn-icons-png.flaticon.com/512/5968/5968890.png">
+<span>Edge</span>
+</div><div class="icon" onclick="openWindow('cortana')">
+<img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png">
+<span>Cortana</span>
+</div><div class="icon" onclick="openWindow('xbox')">
+<img src="https://cdn-icons-png.flaticon.com/512/5969/5969299.png">
+<span>Xbox</span>
+</div><div class="icon" onclick="openWindow('music')">
+<img src="https://cdn-icons-png.flaticon.com/512/727/727245.png">
+<span>Musik</span>
+</div><div class="icon" onclick="openWindow('video')">
+<img src="https://cdn-icons-png.flaticon.com/512/1179/1179069.png">
+<span>Video</span>
+</div><div class="icon" onclick="openWindow('chat')">
+<img src="https://cdn-icons-png.flaticon.com/512/2462/2462719.png">
+<span>Messenger</span>
+</div><div class="icon" onclick="openWindow('calculator')">
+<img src="https://cdn-icons-png.flaticon.com/512/891/891175.png">
+<span>Rechner</span>
+</div><div class="icon" onclick="openWindow('calendar')">
+<img src="https://cdn-icons-png.flaticon.com/512/747/747310.png">
+<span>Kalender</span>
+</div><div class="icon" onclick="openWindow('explorer')">
+<img src="https://cdn-icons-png.flaticon.com/512/716/716784.png">
+<span>Dateien</span>
+</div></div><div id="bootScreen" style="position:fixed;inset:0;background:#000;z-index:999999;display:flex;justify-content:center;align-items:center;flex-direction:column;color:white;">
+<h1 style="font-size:58px;font-weight:300;">Windows 10</h1>
+<div style="margin-top:30px;width:70px;height:70px;border:6px solid rgba(255,255,255,0.2);border-top:6px solid white;border-radius:50%;animation:spin 1s linear infinite;"></div>
+<p style="margin-top:25px;font-size:18px;">Wird gestartet...</p>
+</div><div class="start-menu" id="startMenu">
+<h2>Start</h2>
+<div style="margin-top:15px;background:#1f1f1f;padding:10px;border-radius:8px;">
+<input placeholder="Apps und Dateien durchsuchen" style="width:100%;padding:12px;border:none;border-radius:6px;background:#2c2c2c;color:white;">
+</div><div class="start-grid">
+<div class="tile" onclick="openWindow('browser')">🌐 Browser</div>
+<div class="tile" onclick="openWindow('notes')">📝 Notizen</div>
+<div class="tile" onclick="openWindow('explorer')">📁 Dateien</div>
+<div class="tile">🎮 Spiele</div>
+<div class="tile" onclick="openWindow('settings')">⚙ Einstellungen</div>
+<div class="tile">📸 Kamera</div>
+</div>
+</div><div class="window" id="browserWindow">
+<div class="window-header">
+<span>Browser</span>
+<button class="close-btn" onclick="closeWindow('browserWindow')">X</button>
+</div>
+<div class="window-body">
+<div class="browser-bar">
+<input type="text" placeholder="Suche im Emulator...">
+<button>🔍</button>
+</div>
+<div class="browser-content">
+<h2>Willkommen im Windows 10 Emulator</h2>
+<br>
+<p>Dies ist ein moderner Browser innerhalb des Emulators.</p>
+<br>
+<p>Features:</p>
+<ul>
+<li>Windows 10 Design</li>
+<li>Startmenü</li>
+<li>Apps & Fenster</li>
+<li>Taskleiste</li>
+<li>Responsive Design</li>
+<li>HTML, CSS & JavaScript</li>
+</ul>
+</div>
+</div>
+</div><div class="window" id="notesWindow">
+<div class="window-header">
+<span>Notizen</span>
+<button class="close-btn" onclick="closeWindow('notesWindow')">X</button>
+</div>
+<div class="window-body">
+<textarea class="notes-area" placeholder="Schreibe deine Notizen hier..."></textarea>
+</div>
+</div><div class="window" id="storeWindow"><div class="window-header"><span>Microsoft Store</span><button class="close-btn" onclick="closeWindow('storeWindow')">X</button></div><div class="window-body"><h2>Microsoft Store</h2><br><p>⬇ Apps herunterladen</p><div class="start-grid"><div class="tile">🎮 Spiele</div><div class="tile">🎵 Spotify</div><div class="tile">💬 Discord</div></div></div></div><div class="window" id="edgeWindow"><div class="window-header"><span>Microsoft Edge</span><button class="close-btn" onclick="closeWindow('edgeWindow')">X</button></div><div class="window-body"><h2>Edge Browser</h2><br><iframe src="https://example.com" style="width:100%;height:320px;border:none;border-radius:10px;"></iframe></div></div><div class="window" id="cortanaWindow"><div class="window-header"><span>Cortana KI</span><button class="close-btn" onclick="closeWindow('cortanaWindow')">X</button></div><div class="window-body"><h2>🧠 Cortana</h2><br><p>Hallo! Wie kann ich helfen?</p></div></div><div class="window" id="xboxWindow"><div class="window-header"><span>Xbox</span><button class="close-btn" onclick="closeWindow('xboxWindow')">X</button></div><div class="window-body"><h2>🎮 Xbox Gaming</h2><br><p>Freunde online: 3</p></div></div><div class="window" id="musicWindow"><div class="window-header"><span>Musik Player</span><button class="close-btn" onclick="closeWindow('musicWindow')">X</button></div><div class="window-body"><h2>🎵 Musik</h2><audio controls style="width:100%;"><source src=""></audio></div></div><div class="window" id="videoWindow"><div class="window-header"><span>Video Player</span><button class="close-btn" onclick="closeWindow('videoWindow')">X</button></div><div class="window-body"><h2>🎬 Videos</h2><video controls style="width:100%;border-radius:12px;"></video></div></div><div class="window" id="chatWindow"><div class="window-header"><span>Messenger</span><button class="close-btn" onclick="closeWindow('chatWindow')">X</button></div><div class="window-body"><h2>💬 Messenger</h2><br><p>Keine neuen Nachrichten.</p></div></div><div class="window" id="calculatorWindow"><div class="window-header"><span>Rechner</span><button class="close-btn" onclick="closeWindow('calculatorWindow')">X</button></div><div class="window-body"><input id="calcInput" style="width:100%;padding:15px;font-size:24px;"><br><br><button onclick="calculate()">Berechnen</button><h2 id="calcResult"></h2></div></div><div class="window" id="calendarWindow"><div class="window-header"><span>Kalender</span><button class="close-btn" onclick="closeWindow('calendarWindow')">X</button></div><div class="window-body"><h2>📅 Kalender</h2><br><p>20 Mai 2026</p></div></div><div class="window" id="settingsWindow">
+<div class="window-header">
+<span>Einstellungen</span>
+<button class="close-btn" onclick="closeWindow('settingsWindow')">X</button>
+</div>
+<div class="window-body">
+<h2>Windows Einstellungen</h2>
+<br>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:15px;">
+<div class="tile">🖥 System</div>
+<div class="tile">🌐 Netzwerk</div>
+<div class="tile">🎨 Personalisierung</div>
+<div class="tile">🔒 Sicherheit</div>
+<div class="tile">📱 Geräte</div>
+<div class="tile">🔔 Benachrichtigungen</div>
+</div>
+</div>
+</div><div class="window" id="explorerWindow">
+<div class="window-header">
+<span>Datei Explorer</span>
+<button class="close-btn" onclick="closeWindow('explorerWindow')">X</button>
+</div>
+<div class="window-body">
+<h2>Dateien</h2>
+<br>
+<p>📁 Dokumente</p>
+<p>📁 Bilder</p>
+<p>📁 Musik</p>
+<p>📁 Downloads</p>
+<p>📁 Videos</p>
+</div>
+</div><div id="actionCenter" style="position:absolute;right:20px;bottom:60px;width:320px;height:420px;background:rgba(30,30,30,0.96);border-radius:14px;color:white;padding:20px;display:none;backdrop-filter:blur(14px);z-index:999;">
+<h2 style="margin-bottom:20px;">Info Center</h2>
+<p>🔔 Keine neuen Benachrichtigungen</p>
+<br>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+<div class="tile" onclick="toggleDarkMode()">🌙 Dark</div>
+<div class="tile" onclick="nextWallpaper()">🖼 Wallpaper</div>
+<div class="tile">📶 WLAN</div>
+<div class="tile">🔊 Sound</div>
+<div class="tile">✈ Flugmodus</div>
+<div class="tile">🔋 Akku</div>
+</div>
+</div><div class="taskbar">
+<button class="start-btn" onclick="toggleStart()">⊞</button>
+<input class="search" placeholder="Suchen..."><div class="task-icons">
+<button onclick="openWindow('browser')">🌐</button>
+<button onclick="openWindow('notes')">📝</button>
+<button onclick="openWindow('explorer')">📁</button>
+<button onclick="openWindow('settings')">⚙</button>
+</div><div style="display:flex;align-items:center;gap:10px;margin-left:auto;color:white;">
+<span>📶</span>
+<span>🔊</span>
+<span>🔋</span>
+<div class="clock" id="clock"></div>
+<button onclick="toggleActionCenter()" style="background:none;border:none;color:white;font-size:18px;cursor:pointer;">🔔</button>
+</div>
+</div></div><script>
+function toggleStart(){
+    const menu=document.getElementById('startMenu');
+    menu.style.display=menu.style.display==='block'?'none':'block';
+}
+
+function openWindow(type){
+    document.getElementById('startMenu').style.display='none';
+
+    if(type==='browser'){
+        document.getElementById('browserWindow').style.display='block';
+    }
+
+    if(type==='notes'){
+        document.getElementById('notesWindow').style.display='block';
+    }
+
+    if(type==='explorer'){
+        document.getElementById('explorerWindow').style.display='block';
+    }
+
+    if(type==='store'){document.getElementById('storeWindow').style.display='block';}
+    if(type==='edge'){document.getElementById('edgeWindow').style.display='block';}
+    if(type==='cortana'){document.getElementById('cortanaWindow').style.display='block';}
+    if(type==='xbox'){document.getElementById('xboxWindow').style.display='block';}
+    if(type==='music'){document.getElementById('musicWindow').style.display='block';}
+    if(type==='video'){document.getElementById('videoWindow').style.display='block';}
+    if(type==='chat'){document.getElementById('chatWindow').style.display='block';}
+    if(type==='calculator'){document.getElementById('calculatorWindow').style.display='block';}
+    if(type==='calendar'){document.getElementById('calendarWindow').style.display='block';}
+
+    if(type==='settings'){
+        document.getElementById('settingsWindow').style.display='block';
+    }
+}
+
+function closeWindow(id){
+    document.getElementById(id).style.display='none';
+}
+
+function updateClock(){
+    const now=new Date();
+    const time=now.toLocaleTimeString('de-DE',{
+        hour:'2-digit',
+        minute:'2-digit'
+    });
+
+    const date=now.toLocaleDateString('de-DE');
+
+    document.getElementById('clock').innerHTML=`${time}<br>${date}`;
+}
+
+setInterval(updateClock,1000);
+updateClock();
+
+window.onclick=function(e){
+    if(!e.target.closest('.start-btn') && !e.target.closest('.start-menu')){
+        document.getElementById('startMenu').style.display='none';
+    }
+}
+
+// Fenster verschieben
+const windows=document.querySelectorAll('.window');
+
+windows.forEach(win=>{
+    const header=win.querySelector('.window-header');
+    let isDragging=false;
+    let offsetX=0;
+    let offsetY=0;
+
+    header.addEventListener('mousedown',e=>{
+        isDragging=true;
+        offsetX=e.clientX-win.offsetLeft;
+        offsetY=e.clientY-win.offsetTop;
+    });
+
+    document.addEventListener('mousemove',e=>{
+        if(isDragging){
+            win.style.left=e.clientX-offsetX+'px';
+            win.style.top=e.clientY-offsetY+'px';
+        }
+    });
+
+    document.addEventListener('mouseup',()=>{
+        isDragging=false;
+    });
+});
+
+// Rechner
+function calculate(){
+    try{
+        document.getElementById('calcResult').innerText=eval(document.getElementById('calcInput').value);
+    }catch{
+        document.getElementById('calcResult').innerText='Fehler';
+    }
+}
+
+// Live Notifications
+setInterval(()=>{
+    const note=document.createElement('div');
+    note.innerHTML='🔔 Neue Windows Nachricht';
+    note.style.position='fixed';
+    note.style.right='20px';
+    note.style.top='20px';
+    note.style.background='#0078d7';
+    note.style.color='white';
+    note.style.padding='15px';
+    note.style.borderRadius='10px';
+    note.style.zIndex='999999';
+    document.body.appendChild(note);
+
+    setTimeout(()=>note.remove(),3000);
+},25000);
+
+// Desktop Rechtsklick
+const desktop=document.getElementById('desktop');
+desktop.addEventListener('contextmenu',e=>{
+    e.preventDefault();
+    const menu=document.getElementById('contextMenu');
+    menu.style.display='block';
+    menu.style.left=e.pageX+'px';
+    menu.style.top=e.pageY+'px';
+});
+
+document.addEventListener('click',()=>{
+    document.getElementById('contextMenu').style.display='none';
+});
+
+// Dark Mode
+let dark=false;
+
+function toggleActionCenter(){
+    const ac=document.getElementById('actionCenter');
+    ac.style.display=ac.style.display==='block'?'none':'block';
+}
+
+function toggleDarkMode(){
+    dark=!dark;
+
+    if(dark){
+        document.body.style.filter='invert(1) hue-rotate(180deg)';
+    }else{
+        document.body.style.filter='none';
+    }
+}
+
+// Hintergrund wechseln
+const wallpapers=[
+'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1600&auto=format&fit=crop',
+'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?q=80&w=1600&auto=format&fit=crop',
+'https://images.unsplash.com/photo-1511300636408-a63a89df3482?q=80&w=1600&auto=format&fit=crop'
+];
+
+let currentWallpaper=0;
+
+function nextWallpaper(){
+    currentWallpaper++;
+
+    if(currentWallpaper>=wallpapers.length){
+        currentWallpaper=0;
+    }
+
+    document.getElementById('desktop').style.background=`url('${wallpapers[currentWallpaper]}') center/cover no-repeat`;
+}
+
+// Sounds
+function playClick(){
+    const audio=new Audio('https://www.soundjay.com/buttons/sounds/button-16.mp3');
+    audio.play();
+}
+
+document.querySelectorAll('button,.icon,.tile').forEach(el=>{
+    el.addEventListener('click',playClick);
+});
+
+// Login Screen
+const login=document.createElement('div');
+login.innerHTML=`
+<div id="loginScreen" style="position:fixed;inset:0;background:#0b0b0b;display:flex;justify-content:center;align-items:center;z-index:99999;flex-direction:column;color:white;">
+<h1 style="font-size:50px;margin-bottom:20px;">Windows 10</h1>
+<input id="loginInput" placeholder="Passwort" style="padding:15px;width:260px;border:none;border-radius:8px;font-size:18px;">
+<button onclick="unlockSystem()" style="margin-top:20px;padding:14px 25px;border:none;background:#0078d7;color:white;border-radius:8px;font-size:18px;cursor:pointer;">Anmelden</button>
+</div>
+`;
+
+document.body.appendChild(login);
+
+function unlockSystem(){
+    document.getElementById('loginScreen').style.display='none';
+}
+
+// Fake Windows Update
+function fakeUpdate(){
+    const update=document.createElement('div');
+    update.innerHTML=`
+    <div style="position:fixed;inset:0;background:#0078d7;z-index:9999999;color:white;display:flex;justify-content:center;align-items:center;flex-direction:column;">
+    <h1 style="font-size:55px;">Windows Update</h1>
+    <p style="font-size:24px;margin-top:20px;">Updates werden installiert...</p>
+    <div style="margin-top:30px;font-size:40px;" id="updatePercent">0%</div>
+    </div>
+    `;
+
+    document.body.appendChild(update);
+
+    let percent=0;
+
+    const interval=setInterval(()=>{
+        percent++;
+        document.getElementById('updatePercent').innerText=percent+'%';
+
+        if(percent>=100){
+            clearInterval(interval);
+            update.remove();
+        }
+    },60);
+}
+
+// Boot Screen
+setTimeout(()=>{
+    document.getElementById('bootScreen').style.display='none';
+},3000);
+
+// Tastenkürzel
+window.addEventListener('keydown',e=>{
+    if(e.key==='F2'){
+        toggleDarkMode();
+    }
+
+    if(e.key==='F3'){
+        nextWallpaper();
+    }
+
+    if(e.key==='F4'){
+        fakeUpdate();
+    }
+});
+</script></body>
+</html>
